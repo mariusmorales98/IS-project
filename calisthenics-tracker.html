@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CalTrack — Calisthenics Workout Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  .back-home{
+    font-size: 15px;
+    margin-left: 30px;
+    color:  #f0f0f0;;
+    text-decoration: none;
+  }
+
+  .back-home:hover{
+    color:#c8f564;
+  }
+  
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #c8f564;
+    --accent2: #f5a623;
+    --accent3: #64d6f5;
+    --text: #f0f0f0;
+    --muted: #888;
+    --danger: #f56464;
+    --r: 10px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 50;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    letter-spacing: -0.03em;
+  }
+  .logo span { color: var(--accent); }
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: var(--r);
+    padding: 4px;
+    border: 1px solid var(--border);
+  }
+  .nav-tab {
+    padding: 7px 18px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.18s;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+  }
+  .nav-tab.active {
+    background: var(--accent);
+    color: #0d0d0d;
+  }
+  .nav-tab:not(.active):hover { color: var(--text); background: var(--surface2); }
+
+  /* MAIN */
+  main { padding: 2rem; max-width: 1100px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* SECTION HEADER */
+  .sec-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 18px;
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--text);
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--surface2); border-color: #444; }
+  .btn-accent { background: var(--accent); color: #0d0d0d; border-color: var(--accent); }
+  .btn-accent:hover { background: #b8e854; border-color: #b8e854; }
+  .btn-sm { padding: 5px 12px; font-size: 0.7rem; }
+  .btn-danger { color: var(--danger); border-color: transparent; }
+  .btn-danger:hover { background: rgba(245,100,100,0.1); border-color: rgba(245,100,100,0.3); }
+
+  /* ROUTINE CARDS */
+  .routines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+  .routine-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem;
+    position: relative;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .routine-card:hover { border-color: #3a3a3a; transform: translateY(-2px); }
+  .routine-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .routine-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 5px;
+    margin-right: 10px;
+  }
+  .routine-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    flex: 1;
+  }
+  .routine-actions { display: flex; gap: 4px; }
+  .exercise-list { display: flex; flex-direction: column; gap: 6px; }
+  .exercise-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    background: var(--surface2);
+    border-radius: 7px;
+    font-size: 0.75rem;
+  }
+  .exercise-item .ex-name { color: var(--text); }
+  .exercise-item .ex-meta {
+    color: var(--muted);
+    font-size: 0.7rem;
+  }
+  .routine-freq {
+    margin-top: 12px;
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.8;
+  }
+  .empty-state .big { font-size: 2.5rem; margin-bottom: 0.5rem; }
+
+  /* CALENDAR */
+  .cal-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .cal-month {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    flex: 1;
+  }
+  .cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+    padding: 12px 16px;
+    background: var(--surface);
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+  .cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .cal-weekday {
+    text-align: center;
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 6px 0;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-cell {
+    min-height: 90px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .cal-cell:hover { border-color: #3a3a3a; background: var(--surface2); }
+  .cal-cell.other-month { opacity: 0.3; }
+  .cal-cell.today { border-color: var(--accent); }
+  .cal-cell.today .cal-day-num { color: var(--accent); }
+  .cal-day-num {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 5px;
+  }
+  .cal-pills { display: flex; flex-direction: column; gap: 3px; }
+  .cal-pill {
+    font-size: 0.6rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+  .cal-more {
+    font-size: 0.6rem;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  /* MODAL */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-backdrop.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid #333;
+    border-radius: 16px;
+    padding: 2rem;
+    width: min(540px, 100%);
+    max-height: 88vh;
+    overflow-y: auto;
+    transform: translateY(16px);
+    transition: transform 0.2s;
+  }
+  .modal-backdrop.open .modal { transform: translateY(0); }
+  .modal h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+  }
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .field input, .field select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--bg); }
+  .color-swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .swatch {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.selected { border-color: #fff; }
+  .exercises-editor { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1rem; }
+  .ex-edit-row {
+    display: grid;
+    grid-template-columns: 1fr 58px 70px 80px 34px;
+    gap: 6px;
+    align-items: end;
+  }
+  .ex-edit-row input, .ex-edit-row select {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    padding: 8px 8px;
+    outline: none;
+  }
+  .ex-edit-row input:focus, .ex-edit-row select:focus { border-color: var(--accent); }
+  .ex-edit-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+  .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+  .day-detail-routine {
+    padding: 12px 14px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .day-detail-info { flex: 1; }
+  .day-detail-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.95rem; margin-bottom: 6px; }
+  .day-detail-exercises { display: flex; flex-direction: column; gap: 3px; }
+  .day-detail-ex { font-size: 0.7rem; opacity: 0.75; }
+  .scroll-hint { color: var(--muted); font-size: 0.7rem; margin-top: 0.5rem; text-align: center; }
+
+  @media (max-width: 640px) {
+    main { padding: 1rem; }
+    header { padding: 1rem; }
+    .cal-cell { min-height: 60px; padding: 5px; }
+    .ex-edit-row { grid-template-columns: 1fr 50px 60px 70px 30px; }
+    .routines-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Calis<span>thenics</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('calendar')">Calendar</button>
+    <button class="nav-tab" onclick="showTab('routines')">Routines</button>
+  </div>
+</header>
+
+<main>
+  <!-- CALENDAR PANEL -->
+  <div class="panel active" id="panel-calendar">
+    <div class="cal-nav">
+      <button class="btn btn-sm" onclick="changeMonth(-1)">&#8592;</button>
+      <div class="cal-month" id="cal-month-label"></div>
+      <button class="btn btn-sm" onclick="changeMonth(1)">&#8594;</button>
+      <button class="btn btn-accent btn-sm" onclick="openScheduleModal()">+ Schedule</button>
+    </div>
+    <div class="cal-legend" id="cal-legend"></div>
+    <div class="cal-weekdays">
+      <div class="cal-weekday">Sun</div><div class="cal-weekday">Mon</div>
+      <div class="cal-weekday">Tue</div><div class="cal-weekday">Wed</div>
+      <div class="cal-weekday">Thu</div><div class="cal-weekday">Fri</div>
+      <div class="cal-weekday">Sat</div>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <!-- ROUTINES PANEL -->
+  <div class="panel" id="panel-routines">
+    <div class="sec-header">
+      <div class="sec-title">Routines</div>
+      <button class="btn btn-accent" onclick="openRoutineModal()">+ New routine</button>
+    </div>
+    <div class="routines-grid" id="routines-grid"></div>
+  </div>
+</main>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal-backdrop" onclick="handleBackdropClick(event)">
+  <div class="modal" id="modal">
+    <h2 id="modal-title">Modal</h2>
+    <div id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<a class="back-home" href="index.html">&lt;Go back to home page</a>
+
+<script>
+const PALETTE = [
+  { hex: '#c8f564', dark: '#0d0d0d' },
+  { hex: '#64d6f5', dark: '#0d0d0d' },
+  { hex: '#f5a623', dark: '#0d0d0d' },
+  { hex: '#f56497', dark: '#0d0d0d' },
+  { hex: '#a78bfa', dark: '#0d0d0d' },
+  { hex: '#fb923c', dark: '#0d0d0d' },
+  { hex: '#34d399', dark: '#0d0d0d' },
+  { hex: '#f87171', dark: '#0d0d0d' },
+];
+
+let state = {
+  routines: [
+    { id: 'r1', name: 'Push Day', color: 0, exercises: [
+      { name: 'Push-ups', sets: 4, reps: 20, unit: 'reps' },
+      { name: 'Dips', sets: 3, reps: 12, unit: 'reps' },
+      { name: 'Pike Push-ups', sets: 3, reps: 10, unit: 'reps' },
+    ]},
+    { id: 'r2', name: 'Pull Day', color: 1, exercises: [
+      { name: 'Pull-ups', sets: 4, reps: 8, unit: 'reps' },
+      { name: 'Inverted Rows', sets: 3, reps: 12, unit: 'reps' },
+    ]},
+    { id: 'r3', name: 'Core & Legs', color: 2, exercises: [
+      { name: 'Squats', sets: 4, reps: 25, unit: 'reps' },
+      { name: 'L-sit hold', sets: 3, reps: 30, unit: 'secs' },
+      { name: 'Plank', sets: 3, reps: 60, unit: 'secs' },
+    ]},
+  ],
+  schedule: {},
+  viewYear: new Date().getFullYear(),
+  viewMonth: new Date().getMonth(),
+};
+
+function uid() { return 'r' + Math.random().toString(36).slice(2, 8); }
+function dateKey(y, m, d) { return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function parseKey(k) { const p=k.split('-'); return { y:+p[0], m:+p[1]-1, d:+p[2] }; }
+
+function save() { try { localStorage.setItem('caltrack_v2', JSON.stringify(state)); } catch(e) {} }
+function load() {
+  try {
+    const s = localStorage.getItem('caltrack_v2');
+    if (s) { const p = JSON.parse(s); state.routines = p.routines||state.routines; state.schedule = p.schedule||{}; }
+  } catch(e) {}
+}
+load();
+
+function showTab(t) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(t.slice(0,3))));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + t).classList.add('active');
+  if (t === 'calendar') renderCalendar();
+  if (t === 'routines') renderRoutines();
+}
+
+/* ---- ROUTINES ---- */
+function renderRoutines() {
+  const el = document.getElementById('routines-grid');
+  if (!state.routines.length) {
+    el.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="big">🏋️</div>No routines yet.<br>Create your first workout routine!</div>`;
+    return;
+  }
+  el.innerHTML = state.routines.map(r => {
+    const c = PALETTE[r.color % PALETTE.length];
+    const freq = Object.values(state.schedule).filter(a => a.includes(r.id)).length;
+    return `<div class="routine-card">
+      <div class="routine-card-header">
+        <div class="routine-dot" style="background:${c.hex}"></div>
+        <div class="routine-name">${esc(r.name)}</div>
+        <div class="routine-actions">
+          <button class="btn btn-sm" onclick="openRoutineModal('${r.id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteRoutine('${r.id}')">✕</button>
+        </div>
+      </div>
+      <div class="exercise-list">
+        ${r.exercises.map(e => `<div class="exercise-item">
+          <span class="ex-name">${esc(e.name)}</span>
+          <span class="ex-meta">${e.sets}×${e.reps} ${e.unit}</span>
+        </div>`).join('')}
+      </div>
+      <div class="routine-freq">${freq} session${freq!==1?'s':''} scheduled</div>
+    </div>`;
+  }).join('');
+}
+
+function deleteRoutine(id) {
+  if (!confirm('Delete this routine?')) return;
+  state.routines = state.routines.filter(r => r.id !== id);
+  Object.keys(state.schedule).forEach(k => { state.schedule[k] = state.schedule[k].filter(x => x !== id); });
+  save(); renderRoutines();
+}
+
+function openRoutineModal(editId) {
+  const ex = editId ? state.routines.find(r => r.id === editId) : null;
+  let exercises = ex ? JSON.parse(JSON.stringify(ex.exercises)) : [{ name: '', sets: 3, reps: 10, unit: 'reps' }];
+  let colorIdx = ex ? ex.color : state.routines.length % PALETTE.length;
+
+  function buildBody() {
+    const swatches = PALETTE.map((c, i) =>
+      `<div class="swatch${i===colorIdx?' selected':''}" style="background:${c.hex}" onclick="pickColor(${i})"></div>`
+    ).join('');
+    const exRows = exercises.map((e, i) => `
+      <div class="ex-edit-row" id="exrow-${i}">
+        <div>
+          <div class="ex-edit-label">Exercise</div>
+          <input placeholder="e.g. Push-ups" value="${esc(e.name)}" oninput="exUp(${i},'name',this.value)">
+        </div>
+        <div>
+          <div class="ex-edit-label">Sets</div>
+          <input type="number" min="1" max="99" value="${e.sets}" oninput="exUp(${i},'sets',+this.value)">
+        </div>
+        <div>
+          <div class="ex-edit-label">Count</div>
+          <input type="number" min="1" max="9999" value="${e.reps}" oninput="exUp(${i},'reps',+this.value)">
+        </div>
+        <div>
+          <div class="ex-edit-label">Unit</div>
+          <select onchange="exUp(${i},'unit',this.value)">
+            <option${e.unit==='reps'?' selected':''}>reps</option>
+            <option${e.unit==='secs'?' selected':''}>secs</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
+          <button class="btn btn-sm btn-danger" onclick="exRemove(${i})" style="padding:8px 9px">✕</button>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('modal-body').innerHTML = `
+      <div class="field"><label>Routine name</label><input id="rname" placeholder="e.g. Push Day" value="${esc(ex?ex.name:'')}"></div>
+      <div class="field"><label>Color</label><div class="color-swatches">${swatches}</div></div>
+      <div class="divider"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Exercises</div>
+        <button class="btn btn-sm" onclick="exAdd()">+ Add</button>
+      </div>
+      <div class="exercises-editor">${exRows}</div>
+    `;
+  }
+
+  window.exUp = (i, k, v) => { exercises[i][k] = v; };
+  window.exRemove = (i) => { exercises.splice(i, 1); buildBody(); };
+  window.exAdd = () => { exercises.push({ name: '', sets: 3, reps: 10, unit: 'reps' }); buildBody(); };
+  window.pickColor = (i) => { colorIdx = i; buildBody(); };
+
+  openModal(ex ? 'Edit routine' : 'New routine', buildBody, () => {
+    const name = document.getElementById('rname').value.trim();
+    if (!name) { alert('Enter a routine name.'); return false; }
+    const cleaned = exercises.filter(e => e.name.trim());
+    if (!cleaned.length) { alert('Add at least one exercise.'); return false; }
+    if (ex) {
+      Object.assign(ex, { name, color: colorIdx, exercises: cleaned });
+    } else {
+      state.routines.push({ id: uid(), name, color: colorIdx, exercises: cleaned });
+    }
+    save(); renderRoutines(); renderCalendar();
+    return true;
+  });
+}
+
+/* ---- CALENDAR ---- */
+function renderCalendar() {
+  const y = state.viewYear, m = state.viewMonth;
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = `${months[m]} ${y}`;
+
+  const today = new Date();
+  const first = new Date(y, m, 1);
+  const last = new Date(y, m+1, 0);
+  const startDow = first.getDay();
+  const cells = Math.ceil((startDow + last.getDate()) / 7) * 7;
+
+  let html = '';
+  for (let i = 0; i < cells; i++) {
+    const date = new Date(y, m, 1 - startDow + i);
+    const dy = date.getFullYear(), dm = date.getMonth(), dd = date.getDate();
+    const key = dateKey(dy, dm, dd);
+    const isOther = dm !== m;
+    const isToday = dy===today.getFullYear() && dm===today.getMonth() && dd===today.getDate();
+    const sched = state.schedule[key] || [];
+    const pills = sched.slice(0, 3).map(rid => {
+      const r = state.routines.find(x => x.id === rid);
+      if (!r) return '';
+      const c = PALETTE[r.color % PALETTE.length];
+      return `<div class="cal-pill" style="background:${c.hex};color:${c.dark}">${esc(r.name)}</div>`;
+    }).join('');
+    const more = sched.length > 3 ? `<div class="cal-more">+${sched.length-3} more</div>` : '';
+    html += `<div class="cal-cell${isOther?' other-month':''}${isToday?' today':''}" onclick="openDayModal('${key}')">
+      <div class="cal-day-num">${dd}</div>
+      <div class="cal-pills">${pills}${more}</div>
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML = html;
+
+  const legend = document.getElementById('cal-legend');
+  if (!state.routines.length) { legend.innerHTML = '<span style="font-size:0.72rem;color:var(--muted)">No routines yet — create one first.</span>'; return; }
+  legend.innerHTML = state.routines.map(r => {
+    const c = PALETTE[r.color % PALETTE.length];
+    return `<div class="legend-item"><div class="legend-dot" style="background:${c.hex}"></div>${esc(r.name)}</div>`;
+  }).join('');
+}
+
+function changeMonth(dir) {
+  state.viewMonth += dir;
+  if (state.viewMonth > 11) { state.viewMonth = 0; state.viewYear++; }
+  if (state.viewMonth < 0) { state.viewMonth = 11; state.viewYear--; }
+  renderCalendar();
+}
+
+function openScheduleModal(preKey) {
+  const today = new Date();
+  const defKey = preKey || dateKey(today.getFullYear(), today.getMonth(), today.getDate());
+  openModal('Schedule routine', () => {
+    const opts = state.routines.map(r => `<option value="${r.id}">${esc(r.name)}</option>`).join('');
+    document.getElementById('modal-body').innerHTML = `
+      <div class="field"><label>Date</label><input type="date" id="s-date" value="${defKey}"></div>
+      <div class="field"><label>Routine</label><select id="s-routine">${opts || '<option disabled>No routines yet</option>'}</select></div>
+    `;
+  }, () => {
+    const key = document.getElementById('s-date').value;
+    const rid = document.getElementById('s-routine').value;
+    if (!key || !rid) { alert('Pick a date and routine.'); return false; }
+    if (!state.schedule[key]) state.schedule[key] = [];
+    if (!state.schedule[key].includes(rid)) state.schedule[key].push(rid);
+    save(); renderCalendar();
+    return true;
+  });
+}
+
+function openDayModal(key) {
+  const { y, m, d } = parseKey(key);
+  const label = new Date(y, m, d).toLocaleDateString('default', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const sched = state.schedule[key] || [];
+
+  openModal(label, () => {
+    const items = sched.map(rid => {
+      const r = state.routines.find(x => x.id === rid);
+      if (!r) return '';
+      const c = PALETTE[r.color % PALETTE.length];
+      const exList = r.exercises.map(e => `<div class="day-detail-ex">${esc(e.name)} — ${e.sets}×${e.reps} ${e.unit}</div>`).join('');
+      return `<div class="day-detail-routine" style="background:${c.hex}18;border:1px solid ${c.hex}44">
+        <div class="day-detail-info">
+          <div class="day-detail-name" style="color:${c.hex}">${esc(r.name)}</div>
+          <div class="day-detail-exercises">${exList}</div>
+        </div>
+        <button class="btn btn-sm btn-danger" onclick="removeFromDay('${key}','${rid}')">Remove</button>
+      </div>`;
+    }).join('');
+
+    document.getElementById('modal-body').innerHTML = items ||
+      '<div class="empty-state" style="padding:1.5rem 0">Nothing scheduled — add a routine!</div>';
+    document.getElementById('modal-body').innerHTML +=
+      `<button class="btn" style="width:100%;margin-top:12px;justify-content:center" onclick="closeModal();openScheduleModal('${key}')">+ Add routine to this day</button>`;
+  }, null);
+}
+
+window.removeFromDay = (key, rid) => {
+  state.schedule[key] = (state.schedule[key] || []).filter(x => x !== rid);
+  save(); closeModal(); renderCalendar();
+};
+
+/* ---- MODAL ENGINE ---- */
+let _saveCallback = null;
+
+function openModal(title, bodyFn, saveFn) {
+  _saveCallback = saveFn;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = '';
+  const footer = document.getElementById('modal-footer');
+  if (saveFn) {
+    footer.innerHTML = `<button class="btn" onclick="closeModal()">Cancel</button><button class="btn btn-accent" onclick="doSave()">Save</button>`;
+  } else {
+    footer.innerHTML = `<button class="btn" onclick="closeModal()">Close</button>`;
+  }
+  document.getElementById('modal-backdrop').classList.add('open');
+  if (bodyFn) bodyFn();
+}
+
+function doSave() {
+  if (_saveCallback && _saveCallback() !== false) closeModal();
+}
+
+function closeModal() {
+  document.getElementById('modal-backdrop').classList.remove('open');
+  _saveCallback = null;
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('modal-backdrop')) closeModal();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* INIT */
+renderCalendar();
+</script>
+</body>
+</html>
